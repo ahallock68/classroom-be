@@ -1,4 +1,6 @@
 import express from "express";
+import { eq } from "drizzle-orm";
+import { db } from "./db";
 
 const app = express();
 const PORT = 8000;
@@ -8,7 +10,7 @@ app.use(express.json());
 
 // Routes
 app.get("/", (req, res) => {
-  res.send({ message: "Welcome to the Classroom API" });
+  res.json({ message: "Welcome to the Classroom API" });
 });
 
 // Start server
