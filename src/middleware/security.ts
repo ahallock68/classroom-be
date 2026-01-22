@@ -1,6 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import aj from "../config/arcjet";
 import { ArcjetNodeRequest, slidingWindow } from "@arcjet/node";
+import type { Role } from "../db/schema/auth";
+
+type RateLimitRole = Role | "guest";
 
 const securityMiddleware = async (
   req: Request,
@@ -47,7 +50,7 @@ const securityMiddleware = async (
       method: req.method,
       url: req.originalUrl ?? req.url,
       socket: {
-        remoteAddress: req.socket.remoteAddress ?? req.ip ?? "0.0.0.0",
+        remoteAddress: req.ip ?? req.socket.remoteAddress ?? "unknown",
       },
     };
 
@@ -68,12 +71,11 @@ const securityMiddleware = async (
     }
 
     if (decision.isDenied() && decision.reason.isRateLimit()) {
-      return res.status(403).json({
+      return res.status(429).json({
         error: "Too many requests",
         message,
       });
     }
-
     next();
   } catch (error) {
     console.error("Arcjet middleware error:", error);
